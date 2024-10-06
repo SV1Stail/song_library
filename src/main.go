@@ -19,6 +19,10 @@ func main() {
 	songsMux.HandleFunc("/delete_song", mutatesong.Delete)
 	songsMux.HandleFunc("/change_data", mutatesong.Change)
 	songsMux.HandleFunc("/add_new", mutatesong.Add)
+
+	// rootMux.HandleFunc("/api/get_song_text", GetSongText)
+	// rootMux.HandleFunc("/api/get_songs", GetSongs)
+
 	fmt.Println("Starting server on :8080")
 
 	if err := http.ListenAndServe(":8080", rootMux); err != nil {
