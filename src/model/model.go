@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strconv"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -141,19 +142,19 @@ func (song *SongExtended) ChangeInDB(ctx context.Context, pool *pgxpool.Pool) er
 	argID := 1
 	if song.RDate != "" {
 		slog.Debug("need release_date")
-		query += fmt.Sprintf("release_date=$%d, ", argID)
+		query += "release_date=$" + strconv.Itoa(argID) + ", "
 		args = append(args, song.RDate)
 		argID++
 	}
 	if song.Text != "" {
 		slog.Debug("need text")
-		query += fmt.Sprintf("text=$%d, ", argID)
+		query += "text=$" + strconv.Itoa(argID) + ", "
 		args = append(args, song.Text)
 		argID++
 	}
 	if song.Link != "" {
 		slog.Debug("need link")
-		query += fmt.Sprintf("link=$%d, ", argID)
+		query += "link=$" + strconv.Itoa(argID) + ", "
 		args = append(args, song.Link)
 		argID++
 	}

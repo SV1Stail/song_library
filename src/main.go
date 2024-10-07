@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/SV1Stail/posts_and_comments/datasongs"
 	"github.com/SV1Stail/posts_and_comments/db"
 	mutatesong "github.com/SV1Stail/posts_and_comments/mutateSong"
+	"github.com/SV1Stail/posts_and_comments/textsongs"
 )
 
 func main() {
@@ -34,8 +36,8 @@ func main() {
 	songsMux.HandleFunc("/change_data", mutatesong.Change)
 	songsMux.HandleFunc("/add_new", mutatesong.Add)
 
-	// rootMux.HandleFunc("/api/get_song_text", GetSongText)
-	// rootMux.HandleFunc("/api/get_songs", GetSongs)
+	rootMux.HandleFunc("/api/get_song_text", textsongs.Get)
+	rootMux.HandleFunc("/api/get_songs", datasongs.Get)
 
 	fmt.Println("Starting server on :8080")
 

@@ -27,7 +27,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	slog.Info("decoded request body")
+	slog.Info("decode successful")
 
 	ctx := context.Background()
 	if err := song.GetSongFromDB(ctx, db.PHolder.GetPool()); err != nil {
@@ -51,7 +51,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Retrieved couplets length", "length", coupletsLen)
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil || page < 1 {
-		slog.Error("Invalid page number", "page", page, "error", err)
+		slog.Error("wrong page number", "page", page, "error", err)
 		http.Error(w, "wrong page number", http.StatusBadRequest)
 		return
 	}
