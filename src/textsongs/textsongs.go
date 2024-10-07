@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/SV1Stail/posts_and_comments/db"
 	"github.com/SV1Stail/posts_and_comments/model"
@@ -16,62 +16,76 @@ import (
 // get song's text and verse by verse pagination
 // params: ?page, limit
 func Get(w http.ResponseWriter, r *http.Request) {
+	slog.Info("request to get song text")
 	var song model.SongExtended
 	var couplets []string
-	var wg sync.WaitGroup
 	var start, end, coupletsLen int
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		if err := json.NewDecoder(r.Body).Decode(&song); err != nil {
-			http.Error(w, fmt.Sprintf("cant decode json %v", err), http.StatusBadRequest)
-			return
-		}
-		ctx := context.Background()
-		if err := song.GetSongFromDB(ctx, db.PHolder.GetPool()); err != nil {
-			http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
-			return
-		}
-		if song.Text == "" {
-			http.Error(w, "song does not have text", http.StatusBadRequest)
-			return
-		} else {
-			couplets = strings.Split(song.Text, "\n\n")
-		}
-		coupletsLen = len(couplets)
-	}()
 
-	go func() {
-		defer wg.Done()
-		page, err := strconv.Atoi(r.URL.Query().Get("page"))
-		if err != nil || page < 1 {
-			http.Error(w, fmt.Sprintf("wrong page number %v", err), http.StatusBadRequest)
-			return
-		}
-		limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
-		if err != nil || limit < 1 {
-			http.Error(w, fmt.Sprintf("wrong limit number %v", err), http.StatusBadRequest)
-			return
-		}
-		start = (page - 1) * limit
-		end = start + limit
-	}()
+	if err := json.NewDecoder(r.Body).Decode(&song); err != nil {
+		slog.Error("cant decode json", "error", err)
+		http.Error(w, "cant decode json", http.StatusBadRequest)
+		return
+	}
 
-	wg.Wait()
+	slog.Info("decoded request body")
 
-	if start > coupletsLen {
+	ctx := context.Background()
+	if err := song.GetSongFromDB(ctx, db.PHolder.GetPool()); err != nil {
+		slog.Error("cant get song from db", "error", err)
+		http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
+		return
+	}
+	slog.Info("got song from db")
+
+	if song.Text == "" {
+		slog.Warn("song does not have text")
+		http.Error(w, "song does not have text", http.StatusBadRequest)
+		return
+	}
+	slog.Info("song have text")
+
+	couplets = strings.Split(song.Text, "\n\n")
+	slog.Info("couplets split")
+
+	coupletsLen = len(couplets)
+	slog.Info("Retrieved couplets length", "length", coupletsLen)
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil || page < 1 {
+		slog.Error("Invalid page number", "page", page, "error", err)
+		http.Error(w, "wrong page number", http.StatusBadRequest)
+		return
+	}
+
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil || limit < 1 {
+		slog.Error("wrong limit number", "limit", limit, "error", err)
+		http.Error(w, "wrong limit number", http.StatusBadRequest)
+		return
+	}
+	slog.Info("Valid page and limit parameters", "page", page, "limit", limit)
+
+	start = (page - 1) * limit
+	end = start + limit
+	slog.Info("start and end indices", "start", start, "end", end)
+
+	if start >= coupletsLen {
+		slog.Error("song does not have to much couplets", "requested_start", start, "total_couplets", coupletsLen)
 		http.Error(w, fmt.Sprintf("song does not have %d couplets", start), http.StatusNotFound)
 		return
 	}
 	if end > coupletsLen {
 		end = coupletsLen
 	}
-	nessesaryCouplets := couplets[start:end]
-	resp, err := json.Marshal(nessesaryCouplets)
+	necesaryCouplets := couplets[start:end]
+	resp, err := json.Marshal(necesaryCouplets)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("cnt marshal response | %v", err), http.StatusInternalServerError)
+		slog.Error("cnt marshal response ", "error", err)
+
+		http.Error(w, "cant marshal response", http.StatusInternalServerError)
 		return
 	}
+	slog.Info("ready to send")
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(resp)

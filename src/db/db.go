@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -20,7 +20,7 @@ type PoolHolder struct {
 
 var PHolder PoolHolder
 
-func (db *PoolHolder) Connect() {
+func (db *PoolHolder) Connect() error {
 	user := "user_db"
 	password := "1234"
 	name := "songs_db"
@@ -30,16 +30,19 @@ func (db *PoolHolder) Connect() {
 	db.Pool, err = pgxpool.Connect(context.Background(), fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password,
 		host, port, name))
 	if err != nil {
-		log.Fatalf("unable to connect to database: %v", err)
+		slog.Debug("cant connet to db", "error", err)
+		return err
 	}
-	log.Println("Connected to database successfully")
+	slog.Info("connection success")
+	return nil
 }
 func (db *PoolHolder) Close() {
 	if db.Pool != nil {
 		db.Pool.Close()
 	}
-	log.Println("Database connection close")
+	slog.Info("Database connection close")
 }
 func (db *PoolHolder) GetPool() *pgxpool.Pool {
+	slog.Info("get pools")
 	return db.Pool
 }
