@@ -28,14 +28,18 @@ func Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "wrong limit number", http.StatusBadRequest)
 		return
 	}
+	slog.Info("conver successful", "page", page, "limit", limit)
 
 	var song model.SongExtended
-	if err := json.NewDecoder(r.Body).Decode(&song); err != nil {
-		slog.Error("cant decode json", "error", err)
-		http.Error(w, "cant decode json", http.StatusBadRequest)
-		return
-	}
-	slog.Info("decode successful")
+
+	song.Band = r.URL.Query().Get("group")
+	song.Name = r.URL.Query().Get("song")
+	song.Link = r.URL.Query().Get("link")
+	song.RDate = r.URL.Query().Get("release_date")
+	song.Text = r.URL.Query().Get("text")
+
+	slog.Info("get params successful")
+
 	ctx := context.Background()
 	conn, err := db.PHolder.GetPool().Acquire(ctx)
 	if err != nil {
@@ -67,16 +71,19 @@ func Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cant SELECT from db", http.StatusInternalServerError)
 		return
 	}
-
 	defer rows.Close()
+
+	slog.Info("rows collected")
+
 	var songs []model.SongExtended
 	for rows.Next() {
-		if err := rows.Scan(&song.Group, &song.Name, &song.RDate, &song.Text, &song.Link); err != nil {
+		if err := rows.Scan(&song.Band, &song.Name, &song.RDate, &song.Text, &song.Link); err != nil {
 			slog.Error("cant Scan row from db", "error", err)
 			http.Error(w, "cant Scan row from db", http.StatusInternalServerError)
 			return
 		}
 		songs = append(songs, song)
+		slog.Debug("add song", "Band", song.Band, "song", song.Name)
 	}
 	if err := rows.Err(); err != nil {
 		slog.Error("smt go wrong, rows have err", "error", err)
@@ -86,21 +93,21 @@ func Get(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(songs); err != nil {
 		slog.Error("cant encode JSON", "error", err)
-
 		http.Error(w, "cant encode JSON", http.StatusInternalServerError)
-
 		return
 	}
+	slog.Info("response sent")
+
 }
 
 // mkae string for request to DB
 func makeStringForDBRequest(song *model.SongExtended, page, limit int) (string, []interface{}) {
-	DBrequest := "SELECT group,song,release_date,text,link FROM songs_table WHERE 1=1"
+	DBrequest := "SELECT Band,song,release_date,text,link FROM songs_table WHERE 1=1"
 	args := []interface{}{}
 	argID := 1
-	if song.Group != "" {
-		DBrequest += "AND group=$" + strconv.Itoa(argID)
-		args = append(args, song.Group)
+	if song.Band != "" {
+		DBrequest += "AND Band=$" + strconv.Itoa(argID)
+		args = append(args, song.Band)
 		argID++
 	}
 	if song.Name != "" {

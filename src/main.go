@@ -19,7 +19,7 @@ func main() {
 		Level: logLevel,
 	}))
 
-	logLevel.Set(slog.LevelInfo) // установка уровня логов
+	logLevel.Set(slog.LevelDebug) // установка уровня логов
 
 	slog.SetDefault(logger)
 
@@ -29,12 +29,10 @@ func main() {
 	}
 	defer db.PHolder.Close()
 	rootMux := http.NewServeMux()
-	songsMux := http.NewServeMux()
 
-	rootMux.Handle("/api", http.StripPrefix("/api", songsMux))
-	songsMux.HandleFunc("/delete_song", mutatesong.Delete)
-	songsMux.HandleFunc("/change_data", mutatesong.Change)
-	songsMux.HandleFunc("/add_new", mutatesong.Add)
+	rootMux.HandleFunc("/api/delete_song", mutatesong.Delete)
+	rootMux.HandleFunc("/api/change_data", mutatesong.Change)
+	rootMux.HandleFunc("/api/add_new", mutatesong.Add)
 
 	rootMux.HandleFunc("/api/get_song_text", textsongs.Get)
 	rootMux.HandleFunc("/api/get_songs", datasongs.Get)

@@ -21,11 +21,14 @@ func Get(w http.ResponseWriter, r *http.Request) {
 	var couplets []string
 	var start, end, coupletsLen int
 
-	if err := json.NewDecoder(r.Body).Decode(&song); err != nil {
-		slog.Error("cant decode json", "error", err)
-		http.Error(w, "cant decode json", http.StatusBadRequest)
-		return
-	}
+	// if err := json.NewDecoder(r.Body).Decode(&song); err != nil {
+	// 	slog.Error("cant decode json", "error", err)
+	// 	http.Error(w, "cant decode json", http.StatusBadRequest)
+	// 	return
+	// }
+
+	song.Name = r.URL.Query().Get("song")
+	song.Band = r.URL.Query().Get("group")
 
 	slog.Info("decode successful")
 
@@ -69,8 +72,8 @@ func Get(w http.ResponseWriter, r *http.Request) {
 	slog.Info("start and end indices", "start", start, "end", end)
 
 	if start >= coupletsLen {
-		slog.Error("song does not have to much couplets", "requested_start", start, "total_couplets", coupletsLen)
-		http.Error(w, fmt.Sprintf("song does not have %d couplets", start), http.StatusNotFound)
+		slog.Error("song does not have to much couplets", "requested_start", start, "page", page, "total_couplets", coupletsLen)
+		http.Error(w, fmt.Sprintf("song does not have %d couplets on page %d", start, page), http.StatusNotFound)
 		return
 	}
 	if end > coupletsLen {
@@ -89,4 +92,5 @@ func Get(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(resp)
+	slog.Info("response sent")
 }

@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"os"
 
 	"github.com/SV1Stail/posts_and_comments/db"
 	"github.com/SV1Stail/posts_and_comments/model"
@@ -18,12 +19,15 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	slog.Info("request Delete song")
 
 	var song model.SongExtended
-	if err := json.NewDecoder(r.Body).Decode(&song); err != nil {
-		slog.Error("wrong request body", "error", err)
+	song.Band = r.URL.Query().Get("group")
+	song.Name = r.URL.Query().Get("song")
 
-		http.Error(w, "wrong request body", http.StatusBadRequest)
+	if song.Band == "" || song.Name == "" {
+		slog.Error("song name or group is empty!", "song", song.Name, "group", song.Band)
+		http.Error(w, "check song and group fields", http.StatusBadRequest)
 		return
 	}
+
 	slog.Info("data collected from request")
 	pool := db.PHolder.GetPool()
 	slog.Debug("get pool of connections successful")
@@ -50,12 +54,19 @@ func Change(w http.ResponseWriter, r *http.Request) {
 	slog.Info("request Change song")
 
 	var song model.SongExtended
-	err := json.NewDecoder(r.Body).Decode(&song)
-	if err != nil {
-		slog.Error("wrong request body", "error", err)
-		http.Error(w, "wrong request body", http.StatusBadRequest)
+
+	song.Band = r.URL.Query().Get("group")
+	song.Name = r.URL.Query().Get("song")
+	song.RDate = r.URL.Query().Get("release_date")
+	song.Text = r.URL.Query().Get("text")
+	song.Link = r.URL.Query().Get("link")
+
+	if song.Band == "" || song.Name == "" {
+		slog.Error("song name or group is empty!", "song", song.Name, "group", song.Band)
+		http.Error(w, "check song and group fields", http.StatusBadRequest)
 		return
 	}
+
 	slog.Info("data collected from request")
 
 	if song.RDate == "" && song.Text == "" && song.Link == "" {
@@ -96,13 +107,15 @@ func Add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	slog.Info("data collected from request")
-
-	apiURL := "http://example.com/info"
+	apiURL := os.Getenv("API_URL")
+	if apiURL == "" {
+		apiURL = "http://example.com/info"
+	}
 	slog.Debug("adding params")
 	params := url.Values{}
 	params.Add("song", song.Name)
-	params.Add("group", song.Group)
-	slog.Info("params added", "song", song.Name, "group", song.Group)
+	params.Add("group", song.Band)
+	slog.Info("params added", "song", song.Name, "Band", song.Band)
 
 	resp, err := http.Get(apiURL + "?" + params.Encode())
 	slog.Debug("have full response", "resp", resp)

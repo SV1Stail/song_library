@@ -11,8 +11,8 @@ import (
 )
 
 type Song struct {
-	Group string `json:"group"`
-	Name  string `json:"song"`
+	Band string `json:"group"`
+	Name string `json:"song"`
 }
 type SongExtended struct {
 	Song
@@ -31,10 +31,10 @@ func (song *SongExtended) GetSongFromDB(ctx context.Context, pool *pgxpool.Pool)
 	defer conn.Release()
 	slog.Info("made conn from connections pool")
 
-	err = conn.QueryRow(ctx, "SELECT release_date,text,link FROM songs_table WHERE group=$1 AND name=$2", song.Group, song.Name).Scan(&song.RDate, &song.Text, &song.Link)
+	err = conn.QueryRow(ctx, "SELECT release_date,text,link FROM songs_table WHERE band=$1 AND song=$2", song.Band, song.Name).Scan(&song.RDate, &song.Text, &song.Link)
 	if err == pgx.ErrNoRows {
-		slog.Error("no rows with tihs group nad song", "group", song.Group, "song", song.Name)
-		return fmt.Errorf("no rows with this group: %s and song %s", song.Group, song.Name)
+		slog.Error("no rows with tihs Band song", "Band", song.Band, "song", song.Name)
+		return fmt.Errorf("no rows with this Band: %s and song %s", song.Band, song.Name)
 	} else if err != nil {
 		slog.Error("error in SELECT operation", "error", err)
 		return fmt.Errorf("cant SELECT from db")
@@ -63,8 +63,8 @@ func (song *SongExtended) SaveInDB(ctx context.Context, pool *pgxpool.Pool) erro
 	slog.Info("transaction in work")
 
 	defer ta.Rollback(ctx)
-	_, err = ta.Exec(ctx, "INSERT INTO songs_table (group, song, release_date, text, link) VALUES $1,$2,$3,$4,$5",
-		song.Group, song.Name, song.RDate, song.Text, song.Link)
+	_, err = ta.Exec(ctx, "INSERT INTO songs_table (band, song, release_date, text, link) VALUES $1,$2,$3,$4,$5",
+		song.Band, song.Name, song.RDate, song.Text, song.Link)
 	if err != nil {
 		slog.Error("cant INSERT in db", "error", err)
 		return fmt.Errorf("cant INSERT INTO songs_table")
@@ -99,7 +99,7 @@ func (song *SongExtended) DeleteFromDB(ctx context.Context, pool *pgxpool.Pool) 
 	slog.Info("transaction in work")
 
 	defer ta.Rollback(ctx)
-	_, err = ta.Exec(ctx, "DELETE FROM songs_table WHERE group=$1 AND song=$2", song.Group, song.Name)
+	_, err = ta.Exec(ctx, "DELETE FROM songs_table WHERE band=$1 AND song=$2", song.Band, song.Name)
 	if err != nil {
 		slog.Error("cant DELETE FROM db", "error", err)
 
@@ -116,6 +116,8 @@ func (song *SongExtended) DeleteFromDB(ctx context.Context, pool *pgxpool.Pool) 
 
 	return nil
 }
+
+// change song data if we have band and song's name
 func (song *SongExtended) ChangeInDB(ctx context.Context, pool *pgxpool.Pool) error {
 	slog.Info("start ChangeInDB")
 
@@ -161,8 +163,8 @@ func (song *SongExtended) ChangeInDB(ctx context.Context, pool *pgxpool.Pool) er
 	slog.Info("get what we have to update")
 
 	query = query[:len(query)-2]
-	query += fmt.Sprintf("WHERE group=$%d AND song=$%d", argID, argID+1)
-	args = append(args, song.Group, song.Name)
+	query += fmt.Sprintf("WHERE band=$%d AND song=$%d", argID, argID+1)
+	args = append(args, song.Band, song.Name)
 
 	slog.Info("STRING FRO REQUEST READY")
 	_, err = ta.Exec(ctx, query, args...)
