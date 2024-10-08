@@ -14,18 +14,25 @@ import (
 )
 
 // get song's text and verse by verse pagination
-// params: ?page, limit
+// @Summary Получение текста песни
+// @Description Получение текста песни с пагинацией по куплетам. Фильтрация по названию песни и группы, страницам и лимитом для постраничного отображения куплетов.
+// @Tags songs
+// @Accept  json
+// @Produce  json
+// @Param page query int true "Номер страницы"
+// @Param limit query int true "Количество песен на странице"
+// @Param group query string false "Фильтрация по группе"
+// @Param song query string false "Фильтрация по названию песни"
+// @Success 200 {array} string "Список куплетов"
+// @Failure 400 {string} string "Неверные параметры запроса)"
+// @Failure 404 {string} string "Количество куплетов превышает доступные"
+// @Failure 500 {string} string "Ошибка сервера"
+// @Router /api/get_song_text [get]
 func Get(w http.ResponseWriter, r *http.Request) {
 	slog.Info("request to get song text")
 	var song model.SongExtended
 	var couplets []string
 	var start, end, coupletsLen int
-
-	// if err := json.NewDecoder(r.Body).Decode(&song); err != nil {
-	// 	slog.Error("cant decode json", "error", err)
-	// 	http.Error(w, "cant decode json", http.StatusBadRequest)
-	// 	return
-	// }
 
 	song.Name = r.URL.Query().Get("song")
 	song.Band = r.URL.Query().Get("group")

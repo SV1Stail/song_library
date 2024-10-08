@@ -15,6 +15,17 @@ import (
 )
 
 // delete song from DB
+// @Summary Удаление данных песни
+// @Description Удаление из БД строки с песней по названию и группе
+// @Tags songs
+// @Accept  json
+// @Produce  json
+// @Param group query string false "Фильтрация по группе"
+// @Param song query string false "Фильтрация по названию песни"
+// @Success 200 {string} string "Delete was successful"
+// @Failure 400 {string} string "Неверные параметры запроса"
+// @Failure 500 {string} string "Ошибка сервера"
+// @Router /api/delete_song [delete]
 func Delete(w http.ResponseWriter, r *http.Request) {
 	slog.Info("request Delete song")
 
@@ -49,7 +60,20 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// change song's data in DB
+// @Summary Изменение данных песни
+// @Description Изменение данных песни (дата релиза, текст, ссылка). Поиск по группе и названию.
+// @Tags songs
+// @Accept  json
+// @Produce  json
+// @Param group query string false "Фильтрация по группе"
+// @Param song query string false "Фильтрация по названию песни"
+// @Param release_date query string false "Дата релиза (DD-MM-YYYY)"
+// @Param text query string false "Текст песни"
+// @Param link query string false "Ссылка"
+// @Success 200 {string} string "Update was successful"
+// @Failure 400 {string} string "Неверные параметры запроса"
+// @Failure 500 {string} string "Ошибка сервера"
+// @Router /api/change_data [put]
 func Change(w http.ResponseWriter, r *http.Request) {
 	slog.Info("request Change song")
 
@@ -96,6 +120,16 @@ func Change(w http.ResponseWriter, r *http.Request) {
 }
 
 // add new song in DB
+// @Summary Добавление новой песни
+// @Description Добавление новой песни в базу данных с помощью внешнего API
+// @Tags songs
+// @Accept  json
+// @Produce  json
+// @Param song body model.SongExtended true "Данные новой песни"
+// @Success 201 {string} string "Add successful"
+// @Failure 400 {string} string "Неверные параметры запроса"
+// @Failure 500 {string} string "Ошибка сервера"
+// @Router /api/add_new [post]
 func Add(w http.ResponseWriter, r *http.Request) {
 	slog.Info("request Add song")
 

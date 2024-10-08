@@ -12,7 +12,23 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-// get song's data with filtration and pagination
+// Get song's data with filtration and pagination
+// @Summary Получение данных песен
+// @Description Получение данных песен с фильтрацией по полям и пагинацией
+// @Tags songs
+// @Accept  json
+// @Produce  json
+// @Param page query int true "Номер страницы"
+// @Param limit query int true "Количество песен на странице"
+// @Param group query string false "Фильтрация по группе"
+// @Param song query string false "Фильтрация по названию песни"
+// @Param release_date query string false "Фильтрация по дате релиза (DD-MM-YYYY)"
+// @Param text query string false "Фильтрация по тексту песни"
+// @Param link query string false "Фильтрация по ссылке"
+// @Success 200 {array} model.SongExtended "Список песен"
+// @Failure 400 {string} string "Неверные параметры запроса"
+// @Failure 500 {string} string "Ошибка сервера"
+// @Router /api/get_songs [get]
 func Get(w http.ResponseWriter, r *http.Request) {
 	slog.Info("request to get song info")
 

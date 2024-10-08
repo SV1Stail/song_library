@@ -1,40 +1,36 @@
 /project-root
 │   
 ├── /src
-│   ├── /bash
-│   │   ├── init.sql # таблица для БД
-│   │   └── main.sh # автоматизация создания таблицы
+│   ├── /datasongs
+│   │   └── datasongs.go # Получение данных библиотеки с фильтрацией по всем полям и пагинацией
 │   │   
 │   ├── /first            #первый путь
 │   │   └── first.go  
 │   │
-│   ├── /jwtCommunication            # вспомогательные функции
-│   │   ├── jwtCommunication.go  
-│   │   └── jwtCommunication_test.go
-│   │
 │   ├── /db           # Работа с базой данных
 │   │   └── db.go
 │   │
-│   ├── /second            #второй путь
-│   │   ├── second_test.go  
-│   │   └── second.go 
+│   ├── /migrations            # файлы миграции
+│   │   ├── 1_init.down.sql  # создать таблицу
+│   │   └── 1_init.up.sql  # удалить таблицу
 │   │
-│   ├── /third            # позволяет удалить все записи с истекшими refrash хешами
-│   │   └── third.go 
+│   ├── /model            # структура песен с хелп-функциями для работы сбд
+│   │   └── model.go 
 │   │
-│   ├── Dockerfile
+│   ├── /mutateSong            # удаление,изменение,добавление песен
+│   │   └── mutateSong.go 
+│   │
+│   ├── /textsongs            # Получение текста песни с пагинацией по куплетам
+│   │   └── textsongs.go 
+│   │
+│   ├── .env        #переменные окружения
 │   ├── main.go             # точка входа main
-│   ├── gqlgen.yml  # Конфигурационные файлы проекта
 │   ├── go.mod                  # Файл зависимостей Go
 │   └── go.sum 
 │
 ├── /material
-│   ├── db.sql
 │   └── projectTree.txt
 │
-├── documentation.html  # html страница с документацией к коду
-├── docker-compose.yml
 └── readme.md # Тестовое задание
-go clean -modcache
-go install github.com/99designs/gqlgen@latest
+
 export PATH=$PATH:$(go env GOPATH)/bin

@@ -13,13 +13,21 @@ import (
 	"github.com/SV1Stail/posts_and_comments/textsongs"
 )
 
+// @title Songs API
+// @version 1.0
+// @description API для управления песнями (CRUD операции, получение текста)
+// @host localhost:8080
+// @BasePath /api
 func main() {
 	logLevel := &slog.LevelVar{}
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: logLevel,
 	}))
-
-	logLevel.Set(slog.LevelDebug) // установка уровня логов
+	if os.Getenv("LOGGER") == "debug" {
+		logLevel.Set(slog.LevelDebug) // установка уровня логов
+	} else {
+		logLevel.Set(slog.LevelInfo)
+	}
 
 	slog.SetDefault(logger)
 
