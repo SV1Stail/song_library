@@ -1,0 +1,236 @@
+basePath: /api
+definitions:
+  model.SongExtended:
+    properties:
+      group:
+        type: string
+      link:
+        type: string
+      release_date:
+        type: string
+      song:
+        type: string
+      text:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API для управления песнями (CRUD операции, получение текста)
+  title: Songs API
+  version: "1.0"
+paths:
+  /api/add_new:
+    post:
+      consumes:
+      - application/json
+      description: Добавление новой песни в базу данных с помощью внешнего API
+      parameters:
+      - description: Данные новой песни
+        in: body
+        name: song
+        required: true
+        schema:
+          $ref: '#/definitions/model.SongExtended'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Add successful
+          schema:
+            type: string
+        "400":
+          description: Неверные параметры запроса
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Добавление новой песни
+      tags:
+      - songs
+  /api/change_data:
+    put:
+      consumes:
+      - application/json
+      description: Изменение данных песни (дата релиза, текст, ссылка). Поиск по группе
+        и названию.
+      parameters:
+      - description: Фильтрация по группе
+        in: query
+        name: group
+        type: string
+      - description: Фильтрация по названию песни
+        in: query
+        name: song
+        type: string
+      - description: Дата релиза (DD-MM-YYYY)
+        in: query
+        name: release_date
+        type: string
+      - description: Текст песни
+        in: query
+        name: text
+        type: string
+      - description: Ссылка
+        in: query
+        name: link
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Update was successful
+          schema:
+            type: string
+        "400":
+          description: Неверные параметры запроса
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Изменение данных песни
+      tags:
+      - songs
+  /api/delete_song:
+    delete:
+      consumes:
+      - application/json
+      description: Удаление из БД строки с песней по названию и группе
+      parameters:
+      - description: Фильтрация по группе
+        in: query
+        name: group
+        type: string
+      - description: Фильтрация по названию песни
+        in: query
+        name: song
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Delete was successful
+          schema:
+            type: string
+        "400":
+          description: Неверные параметры запроса
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Удаление данных песни
+      tags:
+      - songs
+  /api/get_song_text:
+    get:
+      consumes:
+      - application/json
+      description: Получение текста песни с пагинацией по куплетам. Фильтрация по
+        названию песни и группы, страницам и лимитом для постраничного отображения
+        куплетов.
+      parameters:
+      - description: Номер страницы
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: Количество песен на странице
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: Фильтрация по группе
+        in: query
+        name: group
+        type: string
+      - description: Фильтрация по названию песни
+        in: query
+        name: song
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список куплетов
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: Неверные параметры запроса)
+          schema:
+            type: string
+        "404":
+          description: Количество куплетов превышает доступные
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Получение текста песни
+      tags:
+      - songs
+  /api/get_songs:
+    get:
+      consumes:
+      - application/json
+      description: Получение данных песен с фильтрацией по полям и пагинацией
+      parameters:
+      - description: Номер страницы
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: Количество песен на странице
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: Фильтрация по группе
+        in: query
+        name: group
+        type: string
+      - description: Фильтрация по названию песни
+        in: query
+        name: song
+        type: string
+      - description: Фильтрация по дате релиза (DD-MM-YYYY)
+        in: query
+        name: release_date
+        type: string
+      - description: Фильтрация по тексту песни
+        in: query
+        name: text
+        type: string
+      - description: Фильтрация по ссылке
+        in: query
+        name: link
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список песен
+          schema:
+            items:
+              $ref: '#/definitions/model.SongExtended'
+            type: array
+        "400":
+          description: Неверные параметры запроса
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Получение данных песен
+      tags:
+      - songs
+swagger: "2.0"
